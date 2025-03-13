@@ -8,7 +8,7 @@ A creative navigation component for React that animates text through the alphabe
 
 ## 🎬 Demo
 
-![Alphabet Hover Navigation Demo](./assets/alpha-nav.mov)
+![Alphabet Hover Navigation Demo](./assets/alpha-nav.gif)
 [Live Demo](https://alphabet-hover-nav-a113146cee37.herokuapp.com/)
 
 ## ✨ Features
