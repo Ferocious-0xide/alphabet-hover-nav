@@ -81,25 +81,6 @@ const AlphabetHoverNav = () => {
   const [expansionLevel, setExpansionLevel] = useState(0);
   const [bgColor, setBgColor] = useState('rgb(0, 0, 0)'); // Black
   const [aiSuggestion, setAiSuggestion] = useState(null);
-  const [userInteractions, setUserInteractions] = useState([]);
-  
-  // Define navigation items for each level
-  const navLevels = [
-    ['Home'], // Level 0
-    ['Home', 'About'], // Level 1: Top expansion
-    ['Home', 'About', 'Projects'], // Level 2: Right expansion
-    ['Home', 'About', 'Projects', 'Contact'], // Level 3: Bottom expansion
-    ['Blog', 'Home', 'About', 'Projects', 'Contact'] // Level 4: Left expansion
-  ];
-  
-  // Navigation positions
-  const navPositions = [
-    'center center', // Level 0: Centered
-    'center flex-start', // Level 1: Top added
-    'flex-end center', // Level 2: Right added
-    'center flex-end', // Level 3: Bottom added
-    'flex-start center' // Level 4: Left added
-  ];
   
   // Update background color based on expansion level
   useEffect(() => {
@@ -107,14 +88,13 @@ const AlphabetHoverNav = () => {
     const grayValue = Math.min(50 * expansionLevel, 200);
     setBgColor(`rgb(${grayValue}, ${grayValue}, ${grayValue})`);
     
-    // Simulated AI fetch when navigation expands
+    // Simulated AI suggestion
     fetchAiSuggestion(expansionLevel);
   }, [expansionLevel]);
   
   // Simulated AI integration
   const fetchAiSuggestion = async (level) => {
-    // This would connect to your backend in a real implementation
-    // For now we'll simulate a response
+    // Simulate a backend call
     setTimeout(() => {
       const suggestions = [
         "Try exploring the About section to learn more.",
@@ -131,22 +111,16 @@ const AlphabetHoverNav = () => {
     }, 800);
   };
   
-  // Track user interactions (would be used with real AI)
-  const trackInteraction = (action) => {
-    const newInteraction = {
-      action,
-      timestamp: new Date().toISOString()
-    };
-    
-    setUserInteractions(prev => [...prev, newInteraction]);
-  };
-  
   return (
     <div 
       style={{ 
         minHeight: '100vh', 
         backgroundColor: bgColor,
         display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'relative',
+        overflow: 'hidden',
         transition: 'background-color 1000ms'
       }}
     >
@@ -160,42 +134,76 @@ const AlphabetHoverNav = () => {
           padding: '0.25rem 0.75rem',
           borderRadius: '0.25rem',
           border: 'none',
-          cursor: 'pointer'
+          cursor: 'pointer',
+          zIndex: 10
         }}
         onClick={() => {
           setExpansionLevel((prev) => (prev < 4 ? prev + 1 : 0));
-          trackInteraction('expanded_navigation');
         }}
       >
         Expand Navigation
       </button>
       
-      <nav style={{
-        color: 'white',
-        fontSize: '1.5rem',
-        fontFamily: 'monospace',
+      {/* Center navigation - Always visible */}
+      <div style={{
+        position: 'absolute',
         display: 'flex',
-        flex: 1,
-        justifyContent: navPositions[expansionLevel].split(' ')[0],
-        alignItems: navPositions[expansionLevel].split(' ')[1],
-        padding: '1rem'
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 5
       }}>
-        <ul style={{
-          listStyle: 'none',
-          padding: 0,
-          margin: 0
-        }}>
-          {navLevels[expansionLevel].map((item, index) => (
-            <li key={index} style={{ marginBottom: '1.5rem' }}>
-              <AlphabetLink 
-                text={item} 
-                onClick={() => trackInteraction(`clicked_${item.toLowerCase()}`)}
-              />
-            </li>
-          ))}
-        </ul>
-      </nav>
+        <AlphabetLink text="Home" />
+      </div>
       
+      {/* Top navigation - Level 1+ */}
+      {expansionLevel >= 1 && (
+        <div style={{
+          position: 'absolute',
+          top: '2rem',
+          textAlign: 'center',
+          zIndex: 5
+        }}>
+          <AlphabetLink text="About" />
+        </div>
+      )}
+      
+      {/* Right navigation - Level 2+ */}
+      {expansionLevel >= 2 && (
+        <div style={{
+          position: 'absolute',
+          right: '2rem',
+          textAlign: 'center',
+          zIndex: 5
+        }}>
+          <AlphabetLink text="Projects" />
+        </div>
+      )}
+      
+      {/* Bottom navigation - Level 3+ */}
+      {expansionLevel >= 3 && (
+        <div style={{
+          position: 'absolute',
+          bottom: '2rem',
+          textAlign: 'center',
+          zIndex: 5
+        }}>
+          <AlphabetLink text="Contact" />
+        </div>
+      )}
+      
+      {/* Left navigation - Level 4+ */}
+      {expansionLevel >= 4 && (
+        <div style={{
+          position: 'absolute',
+          left: '2rem',
+          textAlign: 'center',
+          zIndex: 5
+        }}>
+          <AlphabetLink text="Blog" />
+        </div>
+      )}
+      
+      {/* AI Suggestion */}
       {aiSuggestion && (
         <div style={{
           position: 'absolute',
@@ -206,7 +214,8 @@ const AlphabetHoverNav = () => {
           color: 'white',
           padding: '1rem',
           borderRadius: '0.25rem',
-          maxWidth: '20rem'
+          maxWidth: '20rem',
+          zIndex: 20
         }}>
           <h3 style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>AI Suggestion</h3>
           <p>{aiSuggestion}</p>
