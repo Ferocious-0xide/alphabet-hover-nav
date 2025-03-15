@@ -1,5 +1,5 @@
 // src/components/AlphabetHoverNav.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const AlphabetLink = ({ text }) => {
   const [displayText, setDisplayText] = useState(text);
@@ -67,7 +67,9 @@ const AlphabetLink = ({ text }) => {
         padding: '0.5rem 1rem',
         color: 'white',
         transition: 'color 0.3s',
-        textDecoration: 'none'
+        textDecoration: 'none',
+        fontFamily: 'monospace',
+        fontSize: '1.5rem'
       }}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
@@ -78,41 +80,54 @@ const AlphabetLink = ({ text }) => {
 };
 
 const AlphabetHoverNav = () => {
-  const [expansionLevel, setExpansionLevel] = useState(0);
+  const containerRef = useRef(null);
+  const [showTop, setShowTop] = useState(false);
+  const [showRight, setShowRight] = useState(false);
+  const [showBottom, setShowBottom] = useState(false);
+  const [showLeft, setShowLeft] = useState(false);
   const [bgColor, setBgColor] = useState('rgb(0, 0, 0)'); // Black
-  const [aiSuggestion, setAiSuggestion] = useState(null);
   
-  // Update background color based on expansion level
   useEffect(() => {
-    // Calculate shade of gray based on expansion level
-    const grayValue = Math.min(50 * expansionLevel, 200);
-    setBgColor(`rgb(${grayValue}, ${grayValue}, ${grayValue})`);
-    
-    // Simulated AI suggestion
-    fetchAiSuggestion(expansionLevel);
-  }, [expansionLevel]);
-  
-  // Simulated AI integration
-  const fetchAiSuggestion = async (level) => {
-    // Simulate a backend call
-    setTimeout(() => {
-      const suggestions = [
-        "Try exploring the About section to learn more.",
-        "Check out my latest Projects for examples of my work.",
-        "Need to get in touch? Head to the Contact page.",
-        "My Blog has thoughts on the latest tech trends."
-      ];
+    const handleMouseMove = (e) => {
+      if (!containerRef.current) return;
       
-      if (level > 0) {
-        setAiSuggestion(suggestions[level - 1]);
-      } else {
-        setAiSuggestion(null);
-      }
-    }, 800);
-  };
+      const rect = containerRef.current.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      
+      // Calculate distance from center (normalized 0-1)
+      const mouseX = e.clientX;
+      const mouseY = e.clientY;
+      
+      // Detect which quadrant the mouse is in
+      const isTop = mouseY < centerY - rect.height / 6;
+      const isRight = mouseX > centerX + rect.width / 6;
+      const isBottom = mouseY > centerY + rect.height / 6;
+      const isLeft = mouseX < centerX - rect.width / 6;
+      
+      setShowTop(isTop);
+      setShowRight(isRight);
+      setShowBottom(isBottom);
+      setShowLeft(isLeft);
+      
+      // Count how many directions are active
+      const activeCount = [isTop, isRight, isBottom, isLeft].filter(Boolean).length;
+      
+      // Update background color based on how many menu items are visible
+      const grayValue = Math.min(50 * activeCount, 200);
+      setBgColor(`rgb(${grayValue}, ${grayValue}, ${grayValue})`);
+    };
+    
+    document.addEventListener('mousemove', handleMouseMove);
+    
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, []);
   
   return (
     <div 
+      ref={containerRef}
       style={{ 
         minHeight: '100vh', 
         backgroundColor: bgColor,
@@ -121,29 +136,9 @@ const AlphabetHoverNav = () => {
         alignItems: 'center',
         position: 'relative',
         overflow: 'hidden',
-        transition: 'background-color 1000ms'
+        transition: 'background-color 500ms'
       }}
     >
-      <button 
-        style={{
-          position: 'absolute',
-          top: '1rem',
-          right: '1rem',
-          color: 'white',
-          backgroundColor: 'rgb(59, 130, 246)',
-          padding: '0.25rem 0.75rem',
-          borderRadius: '0.25rem',
-          border: 'none',
-          cursor: 'pointer',
-          zIndex: 10
-        }}
-        onClick={() => {
-          setExpansionLevel((prev) => (prev < 4 ? prev + 1 : 0));
-        }}
-      >
-        Expand Navigation
-      </button>
-      
       {/* Center navigation - Always visible */}
       <div style={{
         position: 'absolute',
@@ -155,72 +150,49 @@ const AlphabetHoverNav = () => {
         <AlphabetLink text="Home" />
       </div>
       
-      {/* Top navigation - Level 1+ */}
-      {expansionLevel >= 1 && (
-        <div style={{
-          position: 'absolute',
-          top: '2rem',
-          textAlign: 'center',
-          zIndex: 5
-        }}>
-          <AlphabetLink text="About" />
-        </div>
-      )}
+      {/* Top navigation */}
+      <div style={{
+        position: 'absolute',
+        top: showTop ? '2rem' : '-5rem',
+        textAlign: 'center',
+        transition: 'top 300ms ease-in-out',
+        zIndex: 5
+      }}>
+        <AlphabetLink text="About" />
+      </div>
       
-      {/* Right navigation - Level 2+ */}
-      {expansionLevel >= 2 && (
-        <div style={{
-          position: 'absolute',
-          right: '2rem',
-          textAlign: 'center',
-          zIndex: 5
-        }}>
-          <AlphabetLink text="Projects" />
-        </div>
-      )}
+      {/* Right navigation */}
+      <div style={{
+        position: 'absolute',
+        right: showRight ? '2rem' : '-10rem',
+        textAlign: 'center',
+        transition: 'right 300ms ease-in-out',
+        zIndex: 5
+      }}>
+        <AlphabetLink text="Projects" />
+      </div>
       
-      {/* Bottom navigation - Level 3+ */}
-      {expansionLevel >= 3 && (
-        <div style={{
-          position: 'absolute',
-          bottom: '2rem',
-          textAlign: 'center',
-          zIndex: 5
-        }}>
-          <AlphabetLink text="Contact" />
-        </div>
-      )}
+      {/* Bottom navigation */}
+      <div style={{
+        position: 'absolute',
+        bottom: showBottom ? '2rem' : '-5rem',
+        textAlign: 'center',
+        transition: 'bottom 300ms ease-in-out',
+        zIndex: 5
+      }}>
+        <AlphabetLink text="Contact" />
+      </div>
       
-      {/* Left navigation - Level 4+ */}
-      {expansionLevel >= 4 && (
-        <div style={{
-          position: 'absolute',
-          left: '2rem',
-          textAlign: 'center',
-          zIndex: 5
-        }}>
-          <AlphabetLink text="Blog" />
-        </div>
-      )}
-      
-      {/* AI Suggestion */}
-      {aiSuggestion && (
-        <div style={{
-          position: 'absolute',
-          bottom: '2rem',
-          right: '2rem',
-          backgroundColor: 'rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(4px)',
-          color: 'white',
-          padding: '1rem',
-          borderRadius: '0.25rem',
-          maxWidth: '20rem',
-          zIndex: 20
-        }}>
-          <h3 style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>AI Suggestion</h3>
-          <p>{aiSuggestion}</p>
-        </div>
-      )}
+      {/* Left navigation */}
+      <div style={{
+        position: 'absolute',
+        left: showLeft ? '2rem' : '-10rem',
+        textAlign: 'center',
+        transition: 'left 300ms ease-in-out',
+        zIndex: 5
+      }}>
+        <AlphabetLink text="Blog" />
+      </div>
     </div>
   );
 };
